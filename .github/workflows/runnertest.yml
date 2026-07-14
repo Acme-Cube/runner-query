@@ -1,0 +1,31 @@
+# Topic 5 — Self-hosted runner min version  ·  AFTER (managed + audited)
+#
+# The good state, in two parts:
+#   1. Enable auto-update on your self-hosted runners so they stay above the
+#      enforced minimum without manual sweeps (configure on the runner host).
+#   2. AUDIT runner versions across the org so you can catch stragglers before
+#      the enforcement deadline.
+#
+# This audit job is RUNNABLE on ubuntu-latest. It is best-effort: on a personal
+# repo with no org runners it simply reports none and still passes green. Point
+# GH_ORG at your org (and provide a token with `admin:org`) to see real data.
+name: "05 · Self-hosted Min Version — AFTER (audit, runnable)"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 13 * * 1"      # weekly Monday audit (illustrative cadence)
+
+permissions:
+  contents: read
+
+jobs:
+  audit-runner-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit self-hosted runner versions (best-effort)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_ORG: ${{ github.repository_owner }}
+        run: bash scripts/inventory-runners.sh
